@@ -42,8 +42,8 @@ namespace HelixToolkit.Wpf.SharpDX
             this.vViewport = effect.GetVariableByName("vViewport").AsVector();
 
             // --- get geometry
-            var geometry = this.Geometry as BillboardText3D;
-            if (geometry == null)
+            var geometry = (BillboardText3D) Geometry;
+            if (geometry == null || !geometry.TextInfo.Any())
             {
                 return;
             }
