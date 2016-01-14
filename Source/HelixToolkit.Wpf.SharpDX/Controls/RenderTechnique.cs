@@ -3,8 +3,10 @@ using System;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
-    public sealed class RenderTechnique : IComparable
+    public sealed class RenderTechnique : IComparable, IDisposable
     {
+        private bool isDisposed = false;
+
         public RenderTechnique(string name)
         {
             this.Name = name;
@@ -27,6 +29,25 @@ namespace HelixToolkit.Wpf.SharpDX
         public override int GetHashCode()
         {
             return this.Name.GetHashCode();
+        }
+
+        public void Dispose()
+        {
+            if(isDisposed) return;
+
+            if(EffectTechnique != null)
+                EffectTechnique.Dispose();
+
+            if(Device != null)
+                Device.Dispose();
+
+            if(Effect != null)
+                Effect.Dispose();
+
+            if(InputLayout != null)
+                InputLayout.Dispose();
+
+            isDisposed = true;
         }
 
         public override bool Equals(object obj)

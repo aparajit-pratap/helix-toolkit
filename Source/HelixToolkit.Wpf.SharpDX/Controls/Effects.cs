@@ -20,7 +20,7 @@ namespace HelixToolkit.Wpf.SharpDX
     using global::SharpDX.Direct3D;
     using System.IO;
 
-    public interface IEffectsManager
+    public interface IEffectsManager : IDisposable
     {
         InputLayout GetLayout(RenderTechnique technique);
         Effect GetEffect(RenderTechnique technique);
@@ -31,7 +31,7 @@ namespace HelixToolkit.Wpf.SharpDX
     /// An Effects manager which includes all standard effects, 
     /// tessellation, and deferred effects.
     /// </summary>
-    public class DefaultEffectsManager : IEffectsManager, IDisposable
+    public class DefaultEffectsManager : IEffectsManager
     {
         /// <summary>
         /// The minimum supported feature level.
@@ -132,12 +132,14 @@ namespace HelixToolkit.Wpf.SharpDX
         /// </summary>
         private Dictionary<string, object> data = new Dictionary<string, object>();
 
+        private bool disposed = false;
+
         /// <summary>
         /// 
         /// </summary>
         ~DefaultEffectsManager()
         {
-            Dispose();
+            Dispose(false);
         }
 
         #region protected methods
@@ -420,21 +422,33 @@ namespace HelixToolkit.Wpf.SharpDX
 
         public void Dispose()
         {
-            if (data != null)
-            {
-                foreach (var item in data)
-                {
-                    var o = item.Value as IDisposable;
-                    Disposer.RemoveAndDispose(ref o);
-                }
-            }
-            data = null;
-
-            Disposer.RemoveAndDispose(ref device);
-            device = null;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         #endregion
+
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if (disposed) return;
+
+            if (isDisposing)
+            {
+                if (data != null)
+                {
+                    foreach (var item in data)
+                    {
+                        var o = item.Value as IDisposable;
+                        Disposer.RemoveAndDispose(ref o);
+                    }
+                }
+                data = null;
+
+                Disposer.RemoveAndDispose(ref device);
+                Disposer.RemoveAndDispose(ref renderTechniquesManager);
+            }
+            disposed = true;
+        }
 
         private class IncludeHandler : Include, ICallbackable, IDisposable
         {

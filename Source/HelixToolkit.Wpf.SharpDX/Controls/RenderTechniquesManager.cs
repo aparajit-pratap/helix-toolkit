@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace HelixToolkit.Wpf.SharpDX
@@ -35,7 +36,7 @@ namespace HelixToolkit.Wpf.SharpDX
         public const string ScreenSpace = "RenderScreenSpace";
     }
 
-    public interface IRenderTechniquesManager
+    public interface IRenderTechniquesManager : IDisposable
     {
         void AddRenderTechnique(string techniqueName, byte[] techniqueSource);
         IDictionary<string, RenderTechnique> RenderTechniques { get; }
@@ -44,7 +45,8 @@ namespace HelixToolkit.Wpf.SharpDX
     public class DefaultRenderTechniquesManager: IRenderTechniquesManager
     {
         internal readonly Dictionary<RenderTechnique, byte[]> TechniquesSourceDict = new Dictionary<RenderTechnique, byte[]>();
-        private Dictionary<string, RenderTechnique> renderTechniques = new Dictionary<string, RenderTechnique>();
+        private readonly Dictionary<string, RenderTechnique> renderTechniques = new Dictionary<string, RenderTechnique>();
+        private bool isDisposed = false;
 
         public IDictionary<string,RenderTechnique> RenderTechniques
         {
@@ -101,6 +103,17 @@ namespace HelixToolkit.Wpf.SharpDX
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            if (isDisposed) return;
+
+            foreach (var renderTechnique in renderTechniques)
+            {
+                renderTechnique.Value.Dispose();
+            }
+            isDisposed = true;
+        }
     }
 
     public class DeferredTechniquesManager : DefaultRenderTechniquesManager
