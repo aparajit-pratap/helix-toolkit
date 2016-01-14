@@ -66,6 +66,20 @@ namespace HelixToolkit.Wpf.SharpDX
             InitializeDefaultTechniques();
         }
 
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if (isDisposed) return;
+
+            if (isDisposing)
+            {
+                foreach (var renderTechnique in renderTechniques)
+                {
+                    renderTechnique.Value.Dispose();
+                }
+            }
+            isDisposed = true;
+        }
+
         protected void InitializeDefaultTechniques()
         {
             AddDefaultTechnique(DefaultRenderTechniqueNames.Phong);
@@ -106,13 +120,8 @@ namespace HelixToolkit.Wpf.SharpDX
 
         public void Dispose()
         {
-            if (isDisposed) return;
-
-            foreach (var renderTechnique in renderTechniques)
-            {
-                renderTechnique.Value.Dispose();
-            }
-            isDisposed = true;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 
